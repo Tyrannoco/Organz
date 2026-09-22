@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Organz — Gestion des révisions</title>
+
+    <!-- Polices : une serif "académique" pour les titres, une sans-serif pour
+       le texte courant, et une monospace pour les dates / données chiffrées -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <!-- La sidebar est entièrement générée par JavaScript (voir renderSidebar()
+         dans app.js) : ici on ne met qu'un conteneur vide. -->
+      <aside class="sidebar" id="sidebar"></aside>
+
+      <!-- Fond semi-transparent affiché derrière la sidebar sur mobile quand elle est ouverte -->
+      <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+      <!-- Zone principale : son contenu change selon la page active
+         (Accueil / À réviser aujourd'hui / Tous les cours / Progression) -->
+      <main class="main" id="main"></main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

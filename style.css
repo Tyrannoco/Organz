@@ -1,0 +1,1740 @@
+/* ============================================================
+   ORGANZ — style.css
+   ------------------------------------------------------------
+   Organisé en sections :
+   1. Tokens (variables de design : couleurs, typos, espacements)
+   2. Reset & base
+   3. Layout général (sidebar + zone principale)
+   4. Sidebar
+   5. Composants communs (titres, cartes, boutons…)
+   6. Page Accueil / À réviser aujourd'hui
+   7. Grille "tableur" (Tous les cours)
+   8. Page Progression
+   9. Responsive (tablette / mobile)
+   ============================================================ */
+
+/* ---------- 1. TOKENS ---------- */
+
+:root {
+  /* Couleurs de fond */
+  --bg: #faf9f6; /* fond principal, blanc légèrement cassé */
+  --bg-sidebar: #f5f3ee;
+  --bg-card: #ffffff;
+  --bg-hover: #f1efe9;
+
+  /* Bordures */
+  --border: #e7e4db;
+  --border-soft: #efede5;
+
+  /* Texte */
+  --text-primary: #1c1b18;
+  --text-secondary: #8b877c;
+  --text-tertiary: #b8b4a8;
+
+  /* Couleurs de maîtrise (les 3 seules couleurs "vives" de l'appli) */
+  --red: #e14f42;
+  --red-bg: #fceae7;
+  --orange: #e39a2d;
+  --orange-bg: #fbf0dd;
+  --green: #2e9e6b;
+  --green-bg: #e4f4ec;
+
+  /* Accent neutre (sidebar active, boutons principaux) */
+  --ink: #1c1b18;
+
+  /* États "actifs" (onglet sélectionné, bouton actif…) : une puce sombre sur
+     fond clair, et l'inverse en mode sombre — voir le bloc "body.dark" plus bas. */
+  --active-bg: var(--ink);
+  --active-text: #ffffff;
+  --active-badge-bg: rgba(255, 255, 255, 0.22);
+
+  /* Typographie */
+  --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-body:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Consolas, monospace;
+
+  /* Rayons / ombres */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-card: 0 1px 2px rgba(28, 27, 24, 0.04);
+
+  --sidebar-width: 272px;
+}
+
+/* Mode sombre : on redéfinit uniquement les variables de couleur, tout le
+   reste (espacements, typos, mise en page) reste identique. */
+body.dark {
+  --bg: #17160e;
+  --bg-sidebar: #1c1b15;
+  --bg-card: #201f18;
+  --bg-hover: #29281f;
+
+  --border: #38362a;
+  --border-soft: #2a2920;
+
+  --text-primary: #f3f1e9;
+  --text-secondary: #a9a491;
+  --text-tertiary: #726d5b;
+
+  --red: #f2685b;
+  --red-bg: rgba(242, 104, 91, 0.16);
+  --orange: #f0ac56;
+  --orange-bg: rgba(240, 172, 86, 0.16);
+  --green: #3fc08a;
+  --green-bg: rgba(63, 192, 138, 0.16);
+
+  --ink: #f3f1e9;
+  --active-bg: #f3f1e9;
+  --active-text: #17160e;
+  --active-badge-bg: rgba(23, 22, 14, 0.16);
+}
+
+/* ---------- 2. RESET & BASE ---------- */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.sidebar,
+.main,
+.course-card,
+.grid-table,
+.grid-cell,
+.stat-card,
+.panel,
+.subject-card,
+.activity-list,
+.search-input,
+.tabs,
+.popover,
+.empty-state {
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+button,
+input {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+/* Focus clavier visible partout (accessibilité) */
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ---------- 3. LAYOUT GÉNÉRAL ---------- */
+
+.app {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  padding: 40px 56px 80px;
+  max-width: 1180px;
+}
+
+.sidebar-overlay {
+  display: none;
+}
+
+/* ---------- 4. SIDEBAR ---------- */
+
+.sidebar {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  padding: 22px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+}
+
+.sidebar-logo {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.sidebar-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.theme-toggle {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+}
+.theme-toggle:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.theme-toggle svg {
+  width: 16px;
+  height: 16px;
+}
+
+.lang-toggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.lang-option {
+  padding: 5px 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text-tertiary);
+}
+.lang-option:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.lang-option.active {
+  background: var(--active-bg);
+  color: var(--active-text);
+}
+.lang-option + .lang-option {
+  border-left: 1px solid var(--border);
+}
+
+.sidebar-close {
+  display: none;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  font-size: 17px;
+  color: var(--text-secondary);
+}
+.sidebar-close:hover {
+  background: var(--bg-hover);
+}
+
+.nav-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border-radius: var(--radius-md);
+  text-align: left;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.nav-item:hover {
+  background: var(--bg-hover);
+}
+
+.nav-item.active {
+  background: var(--active-bg);
+  color: var(--active-text);
+}
+
+.nav-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+.nav-icon svg {
+  width: 16px;
+  height: 16px;
+}
+.nav-item.active .nav-icon {
+  color: var(--active-text);
+}
+.nav-label {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-badge {
+  background: var(--red);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 1px 7px;
+  border-radius: 999px;
+  min-width: 20px;
+  text-align: center;
+}
+.nav-item.active .nav-badge {
+  background: var(--active-badge-bg);
+}
+
+.sidebar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+}
+
+.sidebar-label {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  padding: 6px 10px 2px;
+}
+
+.subject-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.subject-header {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-right: 6px;
+  border-radius: var(--radius-md);
+}
+.subject-header:hover {
+  background: var(--bg-hover);
+}
+
+.subject-toggle {
+  width: 22px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+.chevron {
+  display: inline-block;
+  font-size: 12px;
+  transition: transform 0.15s ease;
+}
+.chevron.replie {
+  transform: rotate(-90deg);
+}
+
+.subject-name {
+  flex: 1;
+  text-align: left;
+  padding: 6px 2px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.subject-name.active {
+  color: var(--red);
+  font-weight: 600;
+}
+
+.subject-count {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.folder-list {
+  display: flex;
+  flex-direction: column;
+  padding-left: 24px;
+  gap: 1px;
+  margin-bottom: 4px;
+}
+
+.folder-row {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  border-radius: var(--radius-sm);
+}
+
+.folder-item {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.folder-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.folder-item.active {
+  background: var(--active-bg);
+  color: var(--active-text);
+}
+
+/* Petit bouton "⋯" pour renommer/supprimer une matière ou un dossier.
+   Toujours visible (pas seulement au survol) pour rester utilisable au
+   doigt sur mobile. */
+.row-menu-btn {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+}
+.row-menu-btn svg {
+  width: 14px;
+  height: 14px;
+}
+.row-menu-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.add-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-align: left;
+  padding: 7px 10px;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+}
+.add-link:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.add-matiere {
+  margin-top: 6px;
+  padding: 8px 10px;
+  font-weight: 500;
+  font-size: 15.5px;
+  color: var(--text-secondary);
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-save-status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+.save-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  flex-shrink: 0;
+}
+.sidebar-save-status-off .save-dot {
+  background: var(--text-tertiary);
+}
+
+.reset-link {
+  text-align: left;
+  padding: 6px 10px;
+  font-size: 14px;
+  color: var(--text-tertiary);
+  border-radius: var(--radius-sm);
+}
+.reset-link:hover {
+  color: var(--red);
+  background: var(--red-bg);
+}
+
+/* "Tout effacer" est une action irréversible bien plus radicale que
+   "Revenir aux données de démo" : on le teinte légèrement en rouge même au
+   repos, pour qu'il ne soit jamais confondu avec un simple lien discret. */
+.reset-link-danger {
+  color: var(--red);
+  opacity: 0.75;
+}
+.reset-link-danger:hover {
+  opacity: 1;
+  background: var(--red-bg);
+}
+
+/* ---------- 5. COMPOSANTS COMMUNS ---------- */
+
+.mobile-menu-btn {
+  display: none;
+}
+
+.view-header {
+  margin-bottom: 28px;
+  position: relative;
+}
+
+.view-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  margin-bottom: 10px;
+}
+
+.view-title {
+  font-family: var(--font-display);
+  font-size: 36.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 8px;
+}
+.view-title-sm {
+  font-size: 30px;
+}
+.wave {
+  display: inline-block;
+}
+
+.view-subtitle {
+  font-size: 17px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.view-subtitle strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.section {
+  margin-top: 36px;
+}
+.section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: 19.5px;
+  font-weight: 600;
+  margin: 0;
+}
+.link-voir-tout {
+  font-size: 15px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.link-voir-tout:hover {
+  color: var(--text-primary);
+}
+
+/* pastille de couleur (indicateur de niveau de maîtrise) */
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+.dot-red {
+  background: var(--red);
+}
+.dot-orange {
+  background: var(--orange);
+}
+.dot-green {
+  background: var(--green);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--text-secondary);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+}
+.empty-state p {
+  margin: 0 0 4px;
+}
+.empty-sub {
+  font-size: 15.5px;
+  color: var(--text-tertiary);
+}
+
+/* ---------- 6. ACCUEIL / À RÉVISER AUJOURD'HUI ---------- */
+
+.progress-label {
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-tertiary);
+}
+
+.today-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 42px;
+}
+.today-progress-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-self: end;
+}
+.today-progress-panel .progress-label {
+  text-align: center;
+}
+
+/* Objectif quotidien : l'anneau se ferme progressivement à mesure que les
+   révisions sont validées. pathLength="100" dans le SVG rend le calcul CSS
+   identique à un pourcentage, sans dépendre du rayon du cercle. */
+.daily-progress {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  flex-shrink: 0;
+}
+.daily-progress-ring {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.daily-progress-track,
+.daily-progress-value {
+  fill: none;
+  stroke-width: 9;
+}
+.daily-progress-track {
+  stroke: var(--border-soft);
+}
+.daily-progress-value {
+  stroke: var(--green);
+  stroke-linecap: round;
+  stroke-dasharray: 100 100;
+  transition: stroke-dashoffset 0.35s ease;
+}
+.daily-progress-value-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-family: var(--font-mono);
+}
+.daily-progress-value-text strong {
+  font-size: 30px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.daily-progress-value-text span {
+  font-size: 14px;
+  color: var(--text-tertiary);
+}
+
+.course-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.course-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.course-info {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  margin: -2px -6px;
+}
+.course-info:hover {
+  background: var(--bg-hover);
+}
+.course-name {
+  font-weight: 500;
+  font-size: 16.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.course-title-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+.course-title-row .course-name {
+  min-width: 0;
+}
+.course-meta {
+  font-size: 14.5px;
+  color: var(--text-tertiary);
+  margin-top: 1px;
+}
+
+.course-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 10px;
+  margin-top: 5px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-tertiary);
+}
+.detail-late {
+  color: var(--red);
+}
+
+.priority-picker {
+  flex-shrink: 0;
+}
+.priority-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 52px;
+  justify-content: center;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-card);
+  color: #bf861b;
+  font-size: 13px;
+  line-height: 1;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+.priority-control:hover,
+.priority-control:focus-visible {
+  background: var(--orange-bg);
+  border-color: rgba(227, 154, 45, 0.55);
+  transform: translateY(-1px);
+}
+.priority-stars {
+  letter-spacing: 0;
+}
+.priority-chevron {
+  color: var(--text-tertiary);
+  font-size: 14px;
+  line-height: 0.6;
+}
+
+.planning-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 16px;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+}
+.planning-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.planning-controls select,
+.planning-controls input[type="number"] {
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+.planning-controls input[type="number"] {
+  width: 58px;
+}
+.planning-backlog {
+  margin: 8px 0 0;
+  font-size: 13.5px;
+  color: var(--text-tertiary);
+}
+
+.course-status {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.status-retard {
+  color: var(--red);
+}
+.status-aujourdhui {
+  color: var(--orange);
+  font-weight: 500;
+}
+.status-a-venir,
+.status-lointain {
+  color: var(--text-tertiary);
+}
+
+.course-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.action-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+  transition:
+    transform 0.1s ease,
+    border-color 0.1s ease;
+}
+.action-dot:hover {
+  transform: scale(1.12);
+}
+.action-red {
+  background: var(--red-bg);
+  border-color: rgba(225, 79, 66, 0.35);
+}
+.action-red:hover,
+.action-red:focus-visible {
+  background: var(--red);
+}
+.action-orange {
+  background: var(--orange-bg);
+  border-color: rgba(227, 154, 45, 0.35);
+}
+.action-orange:hover,
+.action-orange:focus-visible {
+  background: var(--orange);
+}
+.action-green {
+  background: var(--green-bg);
+  border-color: rgba(46, 158, 107, 0.35);
+}
+.action-green:hover,
+.action-green:focus-visible {
+  background: var(--green);
+}
+
+/* ---------- 7. GRILLE "TABLEUR" (Tous les cours) ---------- */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-hover);
+  padding: 3px;
+  border-radius: var(--radius-md);
+}
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 7px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.tab.active {
+  background: var(--active-bg);
+  color: var(--active-text);
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  width: 190px;
+}
+.search-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.search-scope-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.sort-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.sort-label {
+  font-size: 14.5px;
+  color: var(--text-tertiary);
+  margin-right: 4px;
+}
+.sort-btn {
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 14.5px;
+  color: var(--text-secondary);
+}
+.sort-btn.active {
+  background: var(--active-bg);
+  color: var(--active-text);
+  font-weight: 500;
+}
+.sort-btn:not(.active):hover {
+  background: var(--bg-hover);
+}
+
+.grid-table {
+  display: grid;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--bg-card);
+}
+
+/* Enveloppe autour de chaque cours. Sur desktop elle est "transparente" pour
+   la grille (display:contents fait que ses cellules filles se comportent
+   comme des enfants directs de .grid-table) ; sur mobile, on la transforme
+   en vraie carte (voir la section RESPONSIVE plus bas). */
+.grid-row {
+  display: contents;
+}
+.history-cells {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 2px;
+}
+.mobile-review-track {
+  display: none;
+}
+
+.grid-cell {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 15.5px;
+  min-width: 0;
+}
+
+.grid-head {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  background: var(--bg-hover);
+  border-bottom: 1px solid var(--border);
+}
+.grid-head-date {
+  justify-content: center;
+  text-align: center;
+  line-height: 1.3;
+}
+.grid-head-today {
+  /* Le bug initial venait d'ici : en display:flex row, "Aujourd'hui" et la
+     date essayaient de tenir sur une seule ligne et débordaient sur la
+     colonne voisine. En empilant les 2 lignes (column) dans une colonne
+     un peu plus large, tout reste bien contenu. */
+  flex-direction: column;
+  gap: 1px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.grid-head-sub {
+  text-transform: none;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-tertiary);
+}
+.grid-head-next {
+  justify-content: flex-end;
+  text-align: right;
+}
+.grid-head-priority,
+.grid-cell-priority {
+  justify-content: center;
+}
+
+.grid-group-title {
+  grid-column: 1 / -1;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+  background: var(--bg-hover);
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.grid-cell-name {
+  gap: 9px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+.grid-cell-name:hover {
+  background: var(--bg-hover);
+}
+
+.grid-cell-history {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 2px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  /* Largeur FIXE (pas juste flex-shrink:0) : sans ça, une case avec une
+     date plus longue ("16 sept") prend plus de place qu'une case avec une
+     date courte, et les carrés ne s'alignent plus du tout d'une ligne à
+     l'autre. Ici, toutes les cases ont toujours exactement la même largeur. */
+  flex: 0 0 44px;
+  width: 44px;
+}
+.grid-cell-history:hover {
+  background: var(--bg-hover);
+}
+.grid-cell-today-cell {
+  justify-content: center;
+}
+
+/* La date affichée sous chaque case : c'est elle qui remplace l'ancien
+   système de colonnes numérotées ("-5"..."-1"), peu clair. Chaque case
+   porte directement sa propre information, sans légende à interpréter. */
+.grid-cell-history-date {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.01em;
+  color: var(--text-tertiary);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Case "vide" = ce cours n'a pas encore autant de révisions passées (par
+   exemple un cours tout juste créé). Contrairement à une case cliquable
+   sans couleur, elle ne représente aucune date précise : pas de survol,
+   pas de curseur pointeur, pour ne pas laisser croire qu'on peut y ajouter
+   quelque chose. */
+.grid-cell-history-vide {
+  cursor: default;
+}
+.grid-cell-history-vide:hover {
+  background: none;
+}
+.grid-cell-history-vide:hover::after {
+  border-style: none;
+}
+
+/* Les petites cases : désormais des carrés arrondis avec un contour de
+   couleur + un fond légèrement teinté (plutôt qu'un simple point plat),
+   et un peu plus grandes pour bien voir la couleur d'un coup d'œil. */
+.grid-cell-history::after {
+  content: "";
+  width: 17px;
+  height: 17px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1.5px solid transparent;
+  transition: transform 0.1s ease;
+}
+.grid-cell-history:not(.filled):hover::after {
+  /* Case vide survolée : on montre un petit contour pointillé pour indiquer qu'on peut cliquer */
+  border-style: dashed;
+  border-color: var(--text-tertiary);
+}
+.grid-cell-history.filled:hover::after {
+  transform: scale(1.08);
+}
+.grid-cell-history.filled.cell-red::after {
+  background: var(--red-bg);
+  border-color: var(--red);
+}
+.grid-cell-history.filled.cell-orange::after {
+  background: var(--orange-bg);
+  border-color: var(--orange);
+}
+.grid-cell-history.filled.cell-green::after {
+  background: var(--green-bg);
+  border-color: var(--green);
+}
+.grid-cell-today-cell {
+  background: rgba(28, 27, 24, 0.02);
+}
+body.dark .grid-cell-today-cell {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.grid-cell-next {
+  justify-content: flex-end;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+}
+
+.add-course-row {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  text-align: left;
+  padding: 13px 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--bg-hover);
+  border-top: 1.5px dashed var(--border);
+}
+.add-course-row:hover {
+  background: var(--active-bg);
+  color: var(--active-text);
+  border-top-color: transparent;
+}
+
+/* Un vrai bouton plein, utilisé pour les actions principales qu'on ne doit
+   surtout pas manquer (ex : ajouter le tout premier cours d'un dossier vide). */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  background: var(--active-bg);
+  color: var(--active-text);
+  font-weight: 600;
+  font-size: 15px;
+}
+.btn-primary:hover {
+  opacity: 0.85;
+}
+
+/* ---------- 8. PROGRESSION ---------- */
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+}
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+}
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 600;
+}
+.stat-red {
+  color: var(--red);
+}
+.stat-green {
+  color: var(--green);
+}
+
+.panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+  margin-bottom: 24px;
+}
+.panel-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0 0 16px;
+}
+.panel-label {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin: 0 0 12px;
+}
+
+.repartition-bar {
+  display: flex;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--border-soft);
+}
+.repartition-bar.small {
+  height: 7px;
+}
+.repartition-segment {
+  height: 100%;
+}
+.seg-red {
+  background: var(--red);
+}
+.seg-orange {
+  background: var(--orange);
+}
+.seg-green {
+  background: var(--green);
+}
+
+.repartition-legend {
+  display: flex;
+  gap: 18px;
+  margin-top: 14px;
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+.repartition-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.subject-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.subject-card {
+  text-align: left;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+}
+.subject-card:hover {
+  border-color: var(--text-tertiary);
+}
+.subject-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+.subject-card-name {
+  font-weight: 600;
+  font-size: 16px;
+}
+.subject-card-count {
+  font-size: 14.5px;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+.subject-card-icon {
+  font-family: var(--font-display);
+  font-size: 19.5px;
+  color: var(--text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+}
+.subject-card-icon svg {
+  width: 18px;
+  height: 18px;
+}
+.subject-card-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  font-size: 14.5px;
+  color: var(--text-secondary);
+}
+.subject-card-foot > span:first-child {
+  display: inline-flex;
+  gap: 10px;
+}
+.subject-card-pct {
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.activity-list {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 15.5px;
+}
+.activity-item:last-child {
+  border-bottom: none;
+}
+.activity-name {
+  flex: 1;
+}
+.activity-date {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-tertiary);
+}
+
+/* ---------- POPOVER (menu flottant) ---------- */
+/* Utilisé à la fois pour le sélecteur de couleur d'une case, et pour le
+   menu "renommer / supprimer" d'un cours. Positionné en JS (voir
+   ouvrirPopover() dans app.js), stylé ici. */
+
+.popover {
+  position: fixed;
+  z-index: 100;
+  min-width: 172px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 28px rgba(20, 19, 14, 0.16);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+body.dark .popover {
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+}
+
+.popover-title {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  padding: 6px 8px 5px;
+}
+
+.popover-color,
+.popover-item,
+.priority-option {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  text-align: left;
+  padding: 7px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  color: var(--text-primary);
+}
+.popover-color:hover,
+.popover-item:hover,
+.priority-option:hover {
+  background: var(--bg-hover);
+}
+
+.priority-option {
+  justify-content: flex-start;
+}
+.priority-option-stars {
+  width: 44px;
+  color: #bf861b;
+  letter-spacing: 1px;
+}
+.priority-option.active {
+  background: var(--orange-bg);
+  font-weight: 600;
+}
+
+.popover-item-danger {
+  color: var(--red);
+}
+.popover-item-danger:hover {
+  background: var(--red-bg);
+}
+
+.popover-divider {
+  height: 1px;
+  background: var(--border-soft);
+  margin: 5px 4px;
+}
+
+/* ---------- 9. RESPONSIVE ---------- */
+
+/* Tablette : la grille garde son principe mais les colonnes sont plus étroites */
+@media (max-width: 1024px) {
+  .main {
+    padding: 32px 28px 64px;
+  }
+  .sidebar {
+    width: 232px;
+  }
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .subject-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile : sidebar en panneau coulissant + grille transformée en liste de cartes */
+@media (max-width: 760px) {
+  .app {
+    display: block;
+  }
+
+  .mobile-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    margin-bottom: 16px;
+    font-size: 16px;
+  }
+
+  .sidebar {
+    position: fixed;
+    z-index: 40;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 84vw;
+    max-width: 320px;
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+  body.sidebar-ouverte .sidebar {
+    transform: translateX(0);
+    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.12);
+  }
+  .sidebar-close {
+    display: flex;
+  }
+
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 19, 16, 0.35);
+    z-index: 30;
+  }
+  body.sidebar-ouverte .sidebar-overlay {
+    display: block;
+  }
+
+  .main {
+    padding: 20px 16px 56px;
+    max-width: 100%;
+  }
+
+  .view-title {
+    font-size: 28px;
+  }
+  .today-header {
+    grid-template-columns: 1fr;
+    row-gap: 20px;
+  }
+  .today-progress-panel {
+    justify-self: start;
+  }
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .tabs {
+    overflow-x: auto;
+  }
+  .toolbar-right {
+    justify-content: space-between;
+  }
+  .search-input {
+    flex: 1;
+    width: auto;
+  }
+
+  .course-card {
+    flex-wrap: wrap;
+  }
+  .course-status {
+    order: 3;
+    width: 100%;
+    padding-left: 22px;
+  }
+  /* La grille "tableur" devient une liste de cartes compactes :
+     chaque cours devient une carte avec son nom, ses petites cases de
+     couleur (sur une ligne qui s'adapte), et sa prochaine révision.
+     (Avant, cette section masquait .grid-cell-history par erreur, ce qui
+     faisait disparaître toutes les couleurs sur mobile.) */
+  .grid-table {
+    display: flex;
+    flex-direction: column;
+    border: none;
+    gap: 10px;
+    background: transparent;
+  }
+  .grid-head {
+    display: none;
+  }
+  .grid-group-title {
+    border-radius: var(--radius-sm);
+    border: none;
+    margin-top: 2px;
+  }
+
+  .grid-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 6px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 12px 14px;
+  }
+  .grid-row .grid-cell {
+    padding: 0;
+    border-bottom: none;
+  }
+  .grid-row .grid-cell-name {
+    flex: 1 1 auto;
+  }
+  .grid-row .grid-cell-name:hover {
+    background: none;
+  } /* pas de vrai survol au doigt sur mobile */
+
+  /* Les colonnes de dates partagées (desktop) n'ont pas de sens sur une
+     carte qui affiche un seul cours : on les cache complètement ici, au
+     profit de la timeline personnelle ci-dessous. La case "Aujourd'hui"
+     desktop a son équivalent dans cette même timeline (dernière puce). */
+  .history-cells,
+  .grid-cell-today-cell {
+    display: none;
+  }
+
+  /* Timeline personnelle de CE cours : chaque puce = une vraie révision
+     réelle, avec sa date en dessous, reliées par une ligne fine pour bien
+     visualiser la progression dans le temps (espacements qui s'allongent
+     quand le cours est de mieux en mieux maîtrisé). */
+  .mobile-review-track {
+    order: 1;
+    display: flex;
+    align-items: flex-start;
+    flex: 1 1 100%;
+    min-width: 0;
+    padding: 10px 4px 8px;
+    border-top: 1px solid var(--border-soft);
+    border-bottom: 1px dashed var(--border-soft);
+  }
+  .mobile-review-chip {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .mobile-review-chip:not(:last-child)::before {
+    /* Trait fin reliant chaque puce à la suivante, pour évoquer une vraie
+       frise chronologique plutôt qu'un simple alignement de carrés. */
+    content: "";
+    position: absolute;
+    top: 6.5px;
+    left: 50%;
+    width: 100%;
+    height: 1.5px;
+    background: var(--border);
+    z-index: 0;
+  }
+  .mobile-review-dot {
+    position: relative;
+    z-index: 1;
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    background: var(--bg-hover);
+    border: 1.5px dashed var(--border);
+    flex-shrink: 0;
+  }
+  .mobile-review-chip.cell-red .mobile-review-dot {
+    background: var(--red-bg);
+    border: 1.5px solid var(--red);
+  }
+  .mobile-review-chip.cell-orange .mobile-review-dot {
+    background: var(--orange-bg);
+    border: 1.5px solid var(--orange);
+  }
+  .mobile-review-chip.cell-green .mobile-review-dot {
+    background: var(--green-bg);
+    border: 1.5px solid var(--green);
+  }
+  .mobile-review-chip.is-today .mobile-review-dot {
+    box-shadow:
+      0 0 0 2.5px var(--bg-card),
+      0 0 0 4px var(--text-tertiary);
+  }
+  .mobile-review-date {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.01em;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+  }
+  .mobile-review-chip.is-today .mobile-review-date {
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+
+  .grid-row .grid-cell-priority {
+    order: 0;
+    flex: 0 0 auto;
+    padding: 2px 0;
+  }
+  .grid-row .grid-cell-next {
+    order: 2;
+    flex: 1 1 100%;
+    justify-content: flex-end;
+    padding-top: 8px;
+    margin-top: 2px;
+    border-top: 1px dashed var(--border-soft);
+  }
+
+  .add-course-row {
+    border: 1.5px dashed var(--border);
+    border-top: 1.5px dashed var(--border);
+    border-radius: var(--radius-md);
+    justify-content: center;
+  }
+}
